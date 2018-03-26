@@ -40,6 +40,11 @@ export async function createServer() {
     .use(decRouter.router.routes())
     .use(decRouter.router.allowedMethods())
     // Default handler when nothing stopped the chain.
+    .use(async ctx => {
+      const file = ctx.path === '/' ? '/index.html' : ctx.path;
+      await send(ctx, file, { root: `${__dirname}/../static` });
+    })
+
     .use(notFoundHandler);
 
   // Creates a http server ready to listen.

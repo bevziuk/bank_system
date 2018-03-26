@@ -3,7 +3,7 @@
   <el-container style="height: 100%;">
     <el-header>
 
-        <nav-bar />
+        <nav-bar v-if="storage.getToken()"/>
 
     </el-header>
     <el-main>
@@ -30,6 +30,11 @@ import NavBar from 'components/navBar';
 import {storage} from '../my-axios.js';
 
 export default {
+  data() {
+    return {
+      storage
+    }
+  },
   components: {
     NavBar
   }

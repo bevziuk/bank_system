@@ -8,7 +8,7 @@
             </el-header>
             
             <el-main>
-                <el-table :data="tableData">
+                <el-table :data="data">
                   <el-table-column type="index">
                   </el-table-column>
                   <el-table-column prop="_id" label="ID" width="300">
@@ -44,24 +44,25 @@ import axios from '../my-axios.js';
 
 export default {
   data() {
-      return {
-        tableData: []
-      }
-    },
-    methods: {
-      async getData() {
-        try {
-          const response = await axios.get(this.$router.history.current.path);
-          console.log(response);
-          this.tableData = response.data;
-        } catch (error) {
-          console.log(error);
-        }
-      }
-    },
-    beforeMount() {
-        this.getData();
+    return {
+      tableData: []
     }
+  },
+  props: ['data']
+  // methods: {
+  //   async getData() {
+  //     try {
+  //       const response = await axios.get(this.$router.history.current.path);
+  //       console.log(response);
+  //       this.tableData = response.data;
+  //     } catch (error) {
+  //       console.log(error);
+  //     }
+  //   }
+  // },
+  // beforeMount() {
+  //     this.getData();
+  // }
 };
 
 

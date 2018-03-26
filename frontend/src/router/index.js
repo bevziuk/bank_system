@@ -33,7 +33,8 @@ export default new Router({
     {
       path: '/transactions/:acc_id',
       component: TransactionsPage,
-      beforeEnter: storage.checkToken
+      beforeEnter: storage.checkToken, 
+      props: true
     },
     {
       title: 'View transactions',
