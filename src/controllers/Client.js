@@ -5,20 +5,28 @@ import HttpStatus from 'http-status-codes';
 import { controller, get, post, put, del } from 'koa-dec-router';
 import BaseCtrl from './Base';
 import url from 'url';
+import jwt from 'jsonwebtoken';
+import config from '../middleware/config';
+import {notAuthorized} from '../middleware/not-authorized';
 
 @controller('/clients')
 export default class ClientCtrl extends BaseCtrl {
-    @get('')
+    @get('', notAuthorized)
     async getList(ctx) {
         try {
-
             console.log('get');
+            console.log(ctx.request.header.authorization);
 
-            const clients = await Client.find()/*.lean()*/;
+            //if(!ctx.request.header.authorization){
+            //    console.log('AAAAAA'); return ctx.status = 401;}
+            const token = jwt.verify(ctx.request.header.authorization, config.secret);
+            console.log(token);
 
-            ctx.ok(clients);
+            const client = await Client.findById(token.id)/*.lean()*/;
+            const data = { name: client.name, surname: client.surname };
+            ctx.ok(data);
         } catch (err) {
-            ctx.throw(HttpStatus.BAD_REQUEST, err.message);
+            ctx.throw(HttpStatus.UNAUTHORIZED, err.message);
         }
     }
 
@@ -29,24 +37,48 @@ export default class ClientCtrl extends BaseCtrl {
 
             const new_client = new Client(ctx.request.body);
             await new_client.save();
+            
+            const token = jwt.sign({id: new_client._id}, config.secret, {expiresIn: 3600});
+            ctx.set('Authorization', token);
 
-            const clients = await Client.find();
-            ctx.ok(clients);
+            ctx.ok();
+        } catch (err) {
+            ctx.throw(HttpStatus.BAD_REQUEST, err.message);
+        }
+    }
+    
+    @post('/login')
+    async checkItem(ctx) {
+        try {
+            console.log('post');
+
+            console.log(ctx.request.body);
+            
+            const data = ctx.request.body;
+            
+            const client = await Client.findOne({username: data.username});
+            if (client && client.password === data.password) {
+                const token = jwt.sign({id: client._id}, config.secret, {expiresIn: 3600});
+                ctx.set('Authorization', token);
+                ctx.ok();
+            } else {
+                ctx.throw(HttpStatus.NOT_FOUND, "Not correct login or password");
+            }        
         } catch (err) {
             ctx.throw(HttpStatus.BAD_REQUEST, err.message);
         }
     }
 
-    @get('/:_id')
-    async getItemById(ctx) {
-        try {
-            console.log('getByID');
-            const client = await Client.findById(ctx.params._id);
-            ctx.ok(client);
-        } catch (err) {
-            ctx.throw(HttpStatus.NOT_FOUND, err.message);
-        }
-    }
+    // @get('/:_id')
+    // async getItemById(ctx) {
+    //     try {
+    //         console.log('getByID');
+    //         const client = await Client.findById(ctx.params._id);
+    //         ctx.ok(client);
+    //     } catch (err) {
+    //         ctx.throw(HttpStatus.NOT_FOUND, err.message);
+    //     }
+    // }
 
     @put('/:_id')
     async updateItem(ctx) {

@@ -5,6 +5,9 @@ import HttpStatus from 'http-status-codes';
 import { controller, get, post, put, del } from 'koa-dec-router';
 import BaseCtrl from './Base';
 import url from 'url';
+import jwt from 'jsonwebtoken';
+import config from '../middleware/config';
+import {notAuthorized} from '../middleware/not-authorized';
 
 @controller('/accounts')
 export default class AccountCtrl extends BaseCtrl {
@@ -13,39 +16,50 @@ export default class AccountCtrl extends BaseCtrl {
         try {
             console.log('post');
 
-            const new_account = new Account(ctx.request.body);
+            const token = jwt.verify(ctx.request.header.authorization, config.secret);
+            console.log(token);
+
+            const new_account = new Account({user_id: token.id});
             await new_account.save();
 
-            const client = await Client.findById(ctx.request.body.user_id);
+            const client = await Client.findById(token.id);
             client.accounts.push(new_account._id);
             await client.save();
 
-            const accounts = await Account.find({user_id: ctx.request.body.user_id});
-            ctx.ok(accounts);
+            ctx.ok();
         } catch (err) {
             ctx.throw(HttpStatus.BAD_REQUEST, err.message);
         }
     }
 
-    @get('/:_id')
+    @get('', notAuthorized)
     async getItemsForUser(ctx) {
         try {
             console.log('get');
 
-            const accounts = await Account.find({user_id: ctx.params._id});
-            ctx.ok(accounts);
+            const token = jwt.verify(ctx.request.header.authorization, config.secret);
+            console.log(token);
+
+            const accounts = await Account.find({user_id: token.id});
+            const accs = [];
+            for (let i = 0; i < accounts.length; i++) {
+                accs.push({_id: accounts[i]._id, count: accounts[i].count});
+            }
+            ctx.ok(accs);
         } catch (err) {
-            ctx.throw(HttpStatus.NOT_FOUND, err.message);
+            ctx.throw(HttpStatus.UNAUTHORIZED, err.message);
         }
     }
 
-    @put('/:_id')
+    @put('/refill/:_id')
     async updateItem(ctx) {
         try {
             console.log('put');
-            await Account.findByIdAndUpdate(ctx.params._id, {$set: ctx.request.body});
-            const account = await Account.find(ctx.params._id);
-            ctx.ok(account);
+            const account = await Account.findById(ctx.params._id);
+            account.count += ctx.request.body.count;
+            await account.save();
+
+            ctx.ok();
         } catch (err) {
             ctx.throw(HttpStatus.BAD_REQUEST, err.message);
         }
@@ -55,9 +69,25 @@ export default class AccountCtrl extends BaseCtrl {
     async deleteItem(ctx) {
         try {
             console.log('delete');
+
             await Account.findByIdAndRemove(ctx.params._id);
-            //const account = await Account.find();
-            //ctx.ok(account);
+
+            const token = jwt.verify(ctx.request.header.authorization, config.secret);
+            const client = await Client.findById(token.id);
+
+            const index_acc = client.accounts.indexOf(ctx.params._id);
+            client.accounts.splice(index_acc, 1);
+
+            const trans = await Transaction.find({account_id: ctx.params._id});
+            for (let i = 0; i < trans.length; i++) {
+                const index_tran = client.transactions.indexOf(trans[i]._id);
+                client.transactions.splice(index_tran, 1);
+                await Transaction.findByIdAndRemove(trans[i]._id);
+            }
+
+            await client.save()
+
+            ctx.ok();
         } catch (err) {
             ctx.throw(HttpStatus.BAD_REQUEST, err.message);
         }

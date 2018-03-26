@@ -7,7 +7,7 @@ const schema = new Schema({
         type: Schema.Types.ObjectId,
         required: true
     },
-    cash: {
+    count: {
         type: Number,
         default: 0
     }
