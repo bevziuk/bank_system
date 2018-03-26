@@ -5,6 +5,7 @@ import respond from 'koa-respond';
 import bodyParser from 'koa-bodyparser';
 import compress from 'koa-compress';
 import DecRouter from 'koa-dec-router';
+import send from 'koa-send';
 
 import { logger } from './logger';
 
