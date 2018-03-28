@@ -2,7 +2,7 @@
   <div>
 
     <transactions-list :data="tableData"></transactions-list>
-{{acc_id}}
+
   </div>
 </template>
 
@@ -23,14 +23,13 @@ export default {
   mounted() {
     this.getData();
   },
-  updated() {
-    this.getData();
+  updated: function () {
+      this.getData();
   },
   methods: {
     async getData() {
       try {
         const response = await axios.get('/transactions/' + (this.acc_id || ''));
-        console.log(response);
         this.tableData = response.data;
       } catch (error) {
         console.log(error);

@@ -17,7 +17,6 @@ export default class AccountCtrl extends BaseCtrl {
             console.log('post');
 
             const token = jwt.verify(ctx.request.header.authorization, config.secret);
-            console.log(token);
 
             const new_account = new Account({user_id: token.id});
             await new_account.save();

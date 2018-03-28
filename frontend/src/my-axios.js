@@ -9,7 +9,10 @@ export const storage = {
   },
   checkToken: (to, from, next) => {
     if(!storage.getToken())
-      next('/?backurl=' + location.pathname);
+    {
+      const backurl = location.pathname + location.search;
+      next('/?backurl=' + backurl);
+    }
     else
       next();
   }

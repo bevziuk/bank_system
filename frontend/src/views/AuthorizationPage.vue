@@ -7,8 +7,8 @@
       <el-form-item label="Password" prop="password" class="password">
         <el-input v-model="authForm.password" type="password" placeholder="Password"></el-input>
       </el-form-item>
-      <el-form-item class="buttons">
-        <el-button type="primary" @click.prevent="onSignIn">Sign in</el-button>
+      <el-form-item class="auth_buttons">
+        <el-button type="primary" @click.prevent="submitForm('authForm')">Sign in</el-button>
         <el-button type="text" @click.prevent="onSignUp">Sign up?</el-button>
       </el-form-item>
     </el-form>  
@@ -27,11 +27,11 @@
   }
 
   .password {
-    padding-top: 20px;
+    padding-top: 25px;
   }
   
-  .buttons {
-    padding-top: 20px;
+  .auth_buttons {
+    padding-top: 30px;
   }
 </style>
 
@@ -47,12 +47,10 @@ export default {
             },
             rules: {
                 username: [
-                    { required: true, message: 'Please input Activity name', trigger: 'blur' },
-                    { min: 3, max: 15, message: 'Length should be 3 to 5', trigger: 'blur' }
+                    { required: true, message: 'Input username', trigger: 'blur' },
                 ],
                 password: [
-                    { required: true, message: 'Please input Activity name', trigger: 'blur' },
-                    { min: 3, max: 15, message: 'Length should be 3 to 5', trigger: 'blur' }
+                    { required: true, message: 'Input password', trigger: 'blur' },
                 ]
             }
         };
@@ -62,11 +60,21 @@ export default {
         try {
           const response = await axios.post('/clients/login', this.authForm);
           console.log(this.$route.query.backurl);
-          this.$router.push(this.$route.query.backurl || "/userprofile");
+          this.$router.push(this.$route.query.backurl || "/accounts");
         } catch(error) {
           console.log(error);
         }
       },
+      submitForm(formName) {
+            this.$refs[formName].validate((valid) => {
+                if (valid) {
+                    this.onSignIn();
+                } else {
+                    console.log('error submit!!');
+                    return false;
+                }
+            });
+        },
       onSignUp() {
         this.$router.push("/registration");
       }

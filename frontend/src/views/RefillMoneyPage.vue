@@ -7,45 +7,50 @@
       <el-form-item label="Sum" prop="count">
         <el-input v-model.number="refillForm.count" placeholder="UAH"></el-input>
       </el-form-item>
-      <el-form-item>
+      <el-form-item class="ref_button">
         <el-button type="primary" @click.prevent="submitForm('refillForm')">Refill</el-button>
       </el-form-item>
     </el-form>
 
 </template>
 
+<style>
+    .ref_button {
+        padding-top: 30px;
+    }
+</style>
+
 <script>
 import axios from '../my-axios.js';
 
 export default {
-   data() {
+    data() {
         return {
             refillForm: {
                 count: '',
             },
             rules: {
                 count: [
-                    { required: true, message: 'Sum is required'},
-                    { type: 'number', message: 'Sum must be a number'}
+                    { required: true, message: 'Input the sum'},
+                    { type: 'number', min: 1, message: 'Sum must be a number'}
                 ]
             }
         };
     },
     methods: {
-      async onRefill() {
-        try {
-          const response = await axios.put(this.$router.history.current.path, this.refillForm);
-          console.log(response);
-          this.$router.push("/accounts");
-        } catch(error) {
-          console.log(error);
-        }
-      },
+        async onRefill() {
+            try {
+                const response = await axios.put(this.$router.history.current.path, this.refillForm);
+                console.log(response);
+                this.$router.push("/accounts");
+            } catch(error) {
+                console.log(error);
+            }
+        },
 
-      submitForm(formName) {
+        submitForm(formName) {
             this.$refs[formName].validate((valid) => {
                 if (valid) {
-                    console.log(this.refillForm);
                     this.onRefill();
                 } else {
                     console.log('error submit!!');

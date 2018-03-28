@@ -4,7 +4,6 @@ import AuthorizationPage from '../views/AuthorizationPage';
 import RegistrationPage from '../views/RegistrationPage';
 import AccountsPage from '../views/AccountsForUserPage';
 import TransactionsPage from '../views/TransactionsForUserPage';
-import UserProfilePage from '../views/UserProfilePage';
 import RefillMoneyPage from '../views/RefillMoneyPage';
 import PaymentPage from '../views/PaymentPage';
 import {storage} from '../my-axios.js';
@@ -25,7 +24,7 @@ export default new Router({
       component: RegistrationPage
     },
     {
-      title: 'VIew accounts',
+      title: 'View accounts',
       path: '/accounts',
       component: AccountsPage,
       beforeEnter: storage.checkToken
@@ -40,12 +39,6 @@ export default new Router({
       title: 'View transactions',
       path: '/transactions',
       component: TransactionsPage,
-      beforeEnter: storage.checkToken
-    },
-    {
-      title: 'UserProfile',
-      path: '/userprofile',
-      component: UserProfilePage,
       beforeEnter: storage.checkToken
     },
     {

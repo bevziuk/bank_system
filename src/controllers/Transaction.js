@@ -34,17 +34,10 @@ export default class TransactionCtrl extends BaseCtrl {
                 await client.save();
 
                 ctx.ok();
+                return;
             } else {
-                const new_transaction = new Transaction({user_id: token.id, 
-                    account_id: ctx.request.body._id, sum: -1, successful: false});
-                await new_transaction.save();
-
-                const client = await Client.findById(token.id);
-                client.transactions.push(new_transaction._id);
-                await client.save();
+                ctx.status = 501;
             }   
-
-            ctx.ok();
         } catch (err) {
             ctx.throw(HttpStatus.BAD_REQUEST, err.message);
         }
@@ -58,7 +51,13 @@ export default class TransactionCtrl extends BaseCtrl {
             const token = jwt.verify(ctx.request.header.authorization, config.secret);
             console.log(token);
 
-            const trans = await Transaction.find({user_id: token.id});
+            const transactions = await Transaction.find({user_id: token.id});
+
+            const trans = [];
+            for (let item of transactions) {
+                trans.push({_id: item._id, account_id: item.account_id, sum: item.sum, date: item.date});
+            }
+
             ctx.ok(trans);
         } catch (err) {
             ctx.throw(HttpStatus.UNAUTHORIZED, err.message);
@@ -73,7 +72,13 @@ export default class TransactionCtrl extends BaseCtrl {
             const token = jwt.verify(ctx.request.header.authorization, config.secret);
             console.log(token);
 
-            const trans = await Transaction.find({user_id : token.id, account_id: ctx.params._acc_id});
+            const transactions = await Transaction.find({user_id : token.id, account_id: ctx.params._acc_id});
+            
+            const trans = [];
+            for (let item of transactions) {
+                trans.push({_id: item._id, account_id: item.account_id, sum: item.sum, date: item.date});
+            }
+
             ctx.ok(trans);
         } catch (err) {
             ctx.throw(HttpStatus.NOT_FOUND, err.message);

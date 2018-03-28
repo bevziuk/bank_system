@@ -13,8 +13,8 @@
       <el-form-item label="Surname" prop="surname" class="padding">
         <el-input v-model="regForm.surname" placeholder="Your surname"></el-input>
       </el-form-item>
-      <el-form-item class="buttons">
-        <el-button type="primary" @click.prevent="onSendData">Create account</el-button>
+      <el-form-item class="reg_buttons">
+        <el-button type="primary" @click.prevent="submitForm('regForm')">Create account</el-button>
         <el-button type="text" @click.prevent="onSignIn">Sign in</el-button>
       </el-form-item>
     </el-form>
@@ -23,29 +23,51 @@
 
 <style>
     .el-form {
-    margin-top: 80px;
-  }
+        margin-top: 80px;
+    }
 
-  .el-form-item {
-    width: 40%;
-    margin: auto;
-    text-align: center;
-  }
+    .el-form-item {
+        width: 40%;
+        margin: auto;
+        text-align: center;
+    }
 
-  .padding {
-    padding-top: 20px;
-  }
-  
-  .buttons {
-    padding-top: 20px;
-  }
+    .padding {
+        padding-top: 25px;
+    }
+
+    .reg_buttons {
+        padding-top: 30px;
+    }
 </style>
 
 <script>
 import axios from '../my-axios.js';
 
 export default {
-  data() {
+    data() {
+        var checkUsername = (rule, value, callback) => {
+            if (!value) {
+                return callback(new Error('Input username'));
+            }
+            else if (value.length < 3 || value.length > 15) {
+                return callback(new Error('Length should be 3 to 15'));
+            }
+            (async () => {
+                try {
+                    const response = await axios.post('/clients', {username: this.regForm.username, 
+                        is_checking: true});
+                    if (response.data.length > 0) {
+                        return callback(new Error('Username is already taken'));
+                    }
+                    else {
+                        callback();
+                    }
+                } catch (error) {
+                    console.log(error);
+                }
+            })();
+        };
         return {
             regForm: {
                 username: '',
@@ -55,36 +77,42 @@ export default {
             },
             rules: {
                 username: [
-                    { required: true, message: 'Please input Activity name', trigger: 'blur' },
-                    { min: 3, max: 15, message: 'Length should be 3 to 5', trigger: 'blur' }
+                    { validator: checkUsername, required: true, trigger: 'blur' }
                 ],
                 password: [
-                    { required: true, message: 'Please input Activity name', trigger: 'blur' },
-                    { min: 3, max: 15, message: 'Length should be 3 to 5', trigger: 'blur' }
+                    { required: true, message: 'Input password', trigger: 'blur' },
+                    { min: 5, max: 15, message: 'Length should be 5 to 15', trigger: 'blur' }
                 ],
                 name: [
-                    { required: true, message: 'Please input Activity name', trigger: 'blur' },
-                    { min: 3, max: 15, message: 'Length should be 3 to 5', trigger: 'blur' }
+                    { required: true, message: 'Input name', trigger: 'blur' },
+                    { min: 3, max: 15, message: 'Length should be 3 to 15', trigger: 'blur' }
                 ],
                 surname: [
-                    { required: true, message: 'Please input Activity name', trigger: 'blur' },
-                    { min: 3, max: 15, message: 'Length should be 3 to 5', trigger: 'blur' }
+                    { required: true, message: 'Input surname', trigger: 'blur' },
+                    { min: 3, max: 15, message: 'Length should be 3 to 15', trigger: 'blur' }
                 ],
             }
         };
-    },
-    components: {
-        //
     },
     methods: {
         async onSendData() {
             try {
                 const response = await axios.post('/clients', this.regForm);
                 console.log(response);
-                this.$router.push("/userprofile");
+                this.$router.push("/accounts");
             } catch(error) {
                 console.log(error);
             }
+        },
+        submitForm(formName) {
+            this.$refs[formName].validate((valid) => {
+                if (valid) {
+                    this.onSendData();
+                } else {
+                    console.log('error submit!!');
+                    return false;
+                }
+            });
         },
         onSignIn() {
             this.$router.push("/");

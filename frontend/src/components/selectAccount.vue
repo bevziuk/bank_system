@@ -9,7 +9,7 @@
       <el-form-item class="sum">
         <div>Sum: {{this.sum}} UAH</div>
       </el-form-item>
-      <el-form-item class="buttons">
+      <el-form-item class="buttons" v-if="sum > 0 && form.account">
         <el-button size="mini" type="info" @click.prevent="onPay">Pay</el-button>
       </el-form-item>
     </el-form>
@@ -45,7 +45,7 @@ export default {
       form: {
         account: ''
       },
-      sum: 1,
+      sum: 0,
       accounts: []
     }
   },
@@ -54,8 +54,8 @@ export default {
       try {
         const response = await axios.get('/accounts');
         console.log(response);
-        this.tableData = response.data;
-        this.accounts = response.data;        
+        this.accounts = response.data;
+        this.sum = Number(this.getUrlParameter('sum'));       
         console.log(this.accounts);
       } catch (error) {
         console.log(error);
@@ -69,7 +69,13 @@ export default {
         } catch (error) {
             console.log(error);
         }
-    }
+    },
+    getUrlParameter(name) {
+      name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+      var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+      var results = regex.exec(location.search);
+      return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+    },
   },
   beforeMount() {
       this.getData();

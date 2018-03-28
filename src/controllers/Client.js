@@ -35,6 +35,12 @@ export default class ClientCtrl extends BaseCtrl {
         try {
             console.log('post');
 
+            if (ctx.request.body.is_checking) {
+                const is_username = await Client.find({username: ctx.request.body.username});
+                ctx.ok(is_username);
+                return;
+            }
+
             const new_client = new Client(ctx.request.body);
             await new_client.save();
             
@@ -51,8 +57,6 @@ export default class ClientCtrl extends BaseCtrl {
     async checkItem(ctx) {
         try {
             console.log('post');
-
-            console.log(ctx.request.body);
             
             const data = ctx.request.body;
             
@@ -68,17 +72,6 @@ export default class ClientCtrl extends BaseCtrl {
             ctx.throw(HttpStatus.BAD_REQUEST, err.message);
         }
     }
-
-    // @get('/:_id')
-    // async getItemById(ctx) {
-    //     try {
-    //         console.log('getByID');
-    //         const client = await Client.findById(ctx.params._id);
-    //         ctx.ok(client);
-    //     } catch (err) {
-    //         ctx.throw(HttpStatus.NOT_FOUND, err.message);
-    //     }
-    // }
 
     @put('/:_id')
     async updateItem(ctx) {
