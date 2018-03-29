@@ -1,7 +1,7 @@
 <template>
 
     <el-form ref="form" :model="form" label-width="80px" label-position="top">
-      <el-form-item label="Accounts">
+      <el-form-item label="Accounts:">
         <el-select v-model="form.account" placeholder="Select account">
           <el-option v-for="acc in accounts" v-if="acc.count > 0" :label="acc.count" :value="acc._id"></el-option>
         </el-select>
@@ -65,9 +65,12 @@ export default {
         try {
             const response = await axios.post('/transactions', {_id: this.form.account, sum: this.sum});
             console.log(response);
+            await axios.post('https://internet-store.herokuapp.com/api/cart/paid', {result: 'paid'});
             this.$router.push('/transactions/' + this.form.account);
         } catch (error) {
             console.log(error);
+            await axios.post('https://internet-store.herokuapp.com/api/cart/paid', {result: 'notpaid'});
+            this.$router.push('/accounts');
         }
     },
     getUrlParameter(name) {
